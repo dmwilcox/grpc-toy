@@ -1,8 +1,11 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"os"
+
+	_ "github.com/lib/pq"
 )
 
 type DefaultLogger struct {
@@ -58,5 +61,27 @@ func main() {
         flag.Parse()
 	logger := getDefaultLogger(verbose)
 
-	// os.GetEnv("") all the settings
+	user := os.GetEnv("PGUSER")
+	password := os.GetEnv("PGPASSWORD")
+	database := os.GetEnv("PGDATABASE")
+	host := os.GetEnv("PGHOST")
+	port := os.GetEnv("PGPORT")
+
+	connectStr := fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+	        host,
+		port,
+		user,
+		password,
+		database,
+	)
+	db, err := sql.Open("postgres", connectStr)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+	err := db.Ping()
+	if err != nil {
+		panic(err)
+	}
 }
